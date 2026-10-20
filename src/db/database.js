@@ -1,10 +1,15 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 
-// Carpeta donde se guarda el archivo de la base de datos
-mkdirSync('data', { recursive: true });
+// En los tests se usa ":memory:" (base temporal) para no tocar los datos reales
+const dbPath = process.env.DB_PATH ?? 'data/urls.db';
 
-const db = new DatabaseSync('data/urls.db');
+if (dbPath !== ':memory:') {
+  // Carpeta donde se guarda el archivo de la base de datos
+    mkdirSync('data', { recursive: true });
+}
+
+const db = new DatabaseSync(dbPath);
 
 // Crea la tabla solo si todavía no existe
 db.exec(`
