@@ -1,4 +1,5 @@
 import express from 'express';
+import urlsRouter from './routes/urls.js';
 
 const app = express();
 
@@ -9,5 +10,8 @@ app.use(express.json());
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Todas las rutas de links viven bajo /api/urls
+app.use('/api/urls', urlsRouter);
 
 export default app;
