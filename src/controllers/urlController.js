@@ -45,3 +45,43 @@ export function createShortUrl(req, res) {
     .status(500)
     .json({ error: 'No se pudo generar un código único. Intentá de nuevo.' });
 }
+
+// Busca el link, suma un clic y redirige al sitio original
+export function redirectToOriginal(req, res) {
+    const { code } = req.params;
+
+    const row = db
+    .prepare('SELECT original_url FROM urls WHERE code = ?')
+    .get(code);
+
+    if (!row) {
+        return res.status(404).json({ error: 'Link no encontrado.' });
+    }
+
+    db.prepare('UPDATE urls SET clicks = clicks + 1 WHERE code = ?').run(code);
+
+  // 302 = redirección temporal, para que el navegador no la recuerde
+    return res.redirect(302, row.original_url);
+}
+
+// Devuelve los datos y la cantidad de clics de un link
+export function getStats(req, res) {
+    const { code } = req.params;
+
+    const row = db
+    .prepare(
+        'SELECT code, original_url, clicks, created_at FROM urls WHERE code = ?'
+    )
+    .get(code);
+
+    if (!row) {
+        return res.status(404).json({ error: 'Link no encontrado.' });
+    }
+
+    return res.json({
+        code: row.code,
+        originalUrl: row.original_url,
+        clicks: row.clicks,
+        createdAt: row.created_at,
+    });
+}
